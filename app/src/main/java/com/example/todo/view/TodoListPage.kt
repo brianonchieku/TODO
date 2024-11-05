@@ -24,10 +24,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todo.R
@@ -56,7 +58,7 @@ fun TodoListPage(viewModel: TodoViewModel){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceEvenly
         ){
             OutlinedTextField(value = inputText, onValueChange = {inputText=it},
                 modifier = Modifier.weight(1f))
@@ -74,29 +76,34 @@ fun TodoListPage(viewModel: TodoViewModel){
         todoList?.let{
             LazyColumn(
                 content = {
-                    itemsIndexed(todoList!!){ index: Int, item: Todo ->  
-                        TodoItem(item = item)
+                    itemsIndexed(it){ index: Int, item: Todo ->
+                        TodoItem(item = item, onDelete = {
+                            viewModel.deleteTodo(item.id)
+                        })
                     }
                 }
             )
-                
-            
-        }
-
+        }?: Text(text = "No items yet",
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp)
     }
 }
 
 @Composable
-fun TodoItem(item: Todo){
+fun TodoItem(item: Todo, onDelete:()-> Unit){
    Row(
        modifier = Modifier
            .fillMaxWidth()
            .padding(8.dp)
            .clip(RoundedCornerShape(16.dp))
            .background(MaterialTheme.colorScheme.primary)
-           .padding(16.dp)
+           .padding(16.dp),
+       verticalAlignment = Alignment.CenterVertically
    ) {
-       Column {
+       Column(
+           modifier = Modifier.weight(1f)
+       ) {
            Text(text = SimpleDateFormat("HH:mm:aa, dd/mm", Locale.ENGLISH).format(item.createdAt),
                fontSize = 12.sp,
                color = Color.LightGray
@@ -105,8 +112,10 @@ fun TodoItem(item: Todo){
                fontSize = 20.sp,
                color = Color.White)
        }
-       IconButton(onClick = {  }) {
-           Icon(painter = painterResource(id = R.drawable.baseline_delete_24), contentDescription = "delete" )
+       IconButton(onClick = onDelete) {
+           Icon(painter = painterResource(id = R.drawable.baseline_delete_24),
+               contentDescription = "delete",
+               tint = Color.White)
 
        }
    }
